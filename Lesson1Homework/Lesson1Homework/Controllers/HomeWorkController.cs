@@ -1,17 +1,16 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 
 namespace Lesson1Homework.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api")]
     public class HomeWorkController(HttpClient httpClient, IConfiguration configuration) : ControllerBase
     {
         private readonly HttpClient httpClient = httpClient;
         private readonly string? urlJson = configuration["ApiSettings:UrlJson"] ?? throw new ArgumentNullException("BaseUrl is not configured.");
 
         [HttpGet("Posts")]
-        public async Task<IActionResult> GetPostAsync([FromQuery] int? userId, [FromQuery] string title)
+        public async Task<ActionResult> GetPostAsync([FromQuery] int? userId, [FromQuery] string title)
         {
             if (userId == null || string.IsNullOrEmpty(title))
                 return BadRequest("userId and title are required.");
@@ -37,7 +36,7 @@ namespace Lesson1Homework.Controllers
         }
 
         [HttpGet("Post/{id}")]
-        public async Task<IActionResult> GetPostByIdAsync(int id)
+        public async Task<ActionResult> GetPostByIdAsync(int id)
         {
             var url = $"{urlJson}/posts/{id}";
             try
@@ -59,7 +58,7 @@ namespace Lesson1Homework.Controllers
         }
 
         [HttpDelete("Post/{id}")]
-        public async Task<IActionResult> DeletePostById(int id)
+        public async Task<ActionResult> DeletePostById(int id)
         {
             var url = $"{urlJson}/posts/{id}";
             try
@@ -79,26 +78,31 @@ namespace Lesson1Homework.Controllers
             }
         }
 
-        [HttpPost("UsersData")]
-        public IActionResult PostUserData([FromBody] UsersDataResponse userData)
+        [HttpPost("Users")]
+        public ActionResult PostUserData([FromBody] UsersDataResponse userData)
         {
             if (userData == null || userData.Data == null || userData.Data.Count == 0)
             {
                 return BadRequest("Invalid or empty data.");
             }
 
-            return Ok(userData);
+            return Created();
         }
 
-        [HttpPost("UserData")]
-        public IActionResult PostUserData([FromBody] UserDataResponse userData)
+        [HttpPut("User/{id}")]
+        public ActionResult PostUserData(int id, [FromBody] UserDataResponse userData)
         {
+            if (id <= 0)
+            {
+                return BadRequest("Invalid user Id.");
+            }
+
             if (userData == null || userData.Data == null)
             {
                 return BadRequest("Invalid or empty data.");
             }
 
-            return Ok(userData);
+            return Ok();
         }
     }
 }
